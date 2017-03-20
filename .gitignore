@@ -1,0 +1,19 @@
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+.classpath
+.project
+.settings
+{{LOG_DIR}}
+/target/
+/.settings
+/.classpath
+/.project
+/target
+/test-output
+/.idea
+*.iml
+dependency-reduced-pom.xml

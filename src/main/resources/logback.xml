@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<property name="DEV_HOME" value="/home/kishore.bandi/springboot/logs/" />
+
+	<property name="MAX_HISTORY" value="15" />
+
+	<appender name="RequestLogger"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${DEV_HOME}/request.log</file>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>
+				%d{yyyy-MM-dd HH:mm:ss.SSS} %mdc [%thread] %level
+				%logger{35} -
+				%msg%n
+			</Pattern>
+		</encoder>
+	</appender>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<param name="Target" value="System.out" />
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>
+				%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} -
+				%msg%n
+			</Pattern>
+		</layout>
+	</appender>
+
+
+	<appender name="FILE-THREAD" class="ch.qos.logback.classic.sift.SiftingAppender">
+
+		<!-- This is MDC value -->
+		<!-- We will assign a value to 'logFileName' via Java code -->
+		<discriminator>
+			<key>logFileName</key>
+			<defaultValue>head0</defaultValue>
+		</discriminator>
+
+		<sift>
+
+			<!-- A standard RollingFileAppender, the log file is based on 'logFileName' 
+				at runtime -->
+			<appender name="FILE-${logFileName}"
+				class="ch.qos.logback.core.rolling.RollingFileAppender">
+				<file>${DEV_HOME}/${logFileName}.log</file>
+
+				<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+					<Pattern>
+						%d{yyyy-MM-dd HH:mm:ss.SSS} %mdc [%thread] %level
+						%logger{35} - %msg%n
+					</Pattern>
+				</encoder>
+
+				<rollingPolicy
+					class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+					<FileNamePattern>${DEV_HOME}/${logFileName}.%i.log.zip
+					</FileNamePattern>
+					<MinIndex>1</MinIndex>
+					<MaxIndex>10</MaxIndex>
+				</rollingPolicy>
+
+				<triggeringPolicy
+					class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+					<MaxFileSize>10MB</MaxFileSize>
+				</triggeringPolicy>
+
+			</appender>
+
+		</sift>
+	</appender>
+
+
+	<appender name="FILE-AUDIT"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${DEV_HOME}/debug.log</file>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>
+				%d{yyyy-MM-dd HH:mm:ss.SSS} %mdc [%thread] %level
+				%logger{35} -
+				%msg%n
+			</Pattern>
+		</encoder>
+
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			rollover daily
+			<fileNamePattern>${DEV_HOME}/archived/debug.%d{yyyy-MM-dd}.%i.log
+			</fileNamePattern>
+			<totalSizeCap>500MB</totalSizeCap>
+			<maxHistory>${MAX_HISTORY}</maxHistory>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>100MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+
+	</appender>
+
+	<appender name="HIBERNATE-LOG"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${DEV_HOME}/hibernate.log</file>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>
+				%d{yyyy-MM-dd HH:mm:ss.SSS} %mdc [%thread] %level
+				%logger{35} -
+				%msg%n
+			</Pattern>
+		</encoder>
+
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			rollover daily
+			<fileNamePattern>${DEV_HOME}/archived/hibernate.%d{yyyy-MM-dd}.%i.log
+			</fileNamePattern>
+			<totalSizeCap>500MB</totalSizeCap>
+			<maxHistory>${MAX_HISTORY}</maxHistory>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>100MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+
+	</appender>
+
+
+	<appender name="FILE-ERROR"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${DEV_HOME}/error.log</file>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>
+				%d{yyyy-MM-dd HH:mm:ss} %mdc [%thread] %level %logger{35} -
+				%msg%n
+			</Pattern>
+		</encoder>
+
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			rollover daily
+			<fileNamePattern>${DEV_HOME}/archived/error.%d{yyyy-MM-dd}.%i.log
+			</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>10MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+
+	</appender>
+
+
+	<!-- Send logs to both console and file audit -->
+	<logger name="RequestLogger" level="debug" additivity="false">
+		<appender-ref ref="RequestLogger" />
+	</logger>
+
+	<!-- Send logs to both console and file audit -->
+	<logger name="com.bandi" level="debug" additivity="false">
+		<appender-ref ref="FILE-THREAD" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+
+	<!-- Send logs to both console and file audit -->
+	<logger name="com.bandi.rest.HelloSpringRestController" level="debug"
+		additivity="false">
+		<appender-ref ref="FILE-THREAD" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+
+	<!-- Send logs to both console and file audit -->
+	<logger name="com.bandi.rest.HelloJerseyController" level="debug"
+		additivity="false">
+		<appender-ref ref="FILE-THREAD" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+
+	<!-- Send logs to both console and file audit -->
+	<logger name="com.bandi.rest.HelloController" level="debug"
+		additivity="false">
+		<appender-ref ref="FILE-AUDIT" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+
+	<!-- Send logs to both console and file audit -->
+	<logger name="com.bandi" level="debug" additivity="false">
+		<appender-ref ref="FILE-AUDIT" />
+		<appender-ref ref="STDOUT" />
+	</logger>
+
+	<root level="error">
+		<appender-ref ref="FILE-ERROR" />
+	</root>
+
+
+	<!-- 3rdparty Loggers -->
+	<logger name="org.springframework.core">
+		<level value="info" />
+	</logger>
+
+	<logger name="org.springframework.beans">
+		<level value="info" />
+	</logger>
+
+	<logger name="org.springframework.context">
+		<level value="info" />
+	</logger>
+
+	<logger name="org.springframework.http">
+		<level value="debug" />
+	</logger>
+	<!-- below alternate between debug and info -->
+	<logger name="org.springframework.web">
+		<level value="debug" />
+	</logger>
+
+	<!-- Log all SQL DML statements as they are executed -->
+	<logger name="org.hibernate.SQL">
+		<level value="debug" />
+		<appender-ref ref="HIBERNATE-LOG" />
+	</logger>
+
+	<!-- Log all JDBC parameters -->
+	<logger name="org.hibernate.type">
+		<level value="debug" />
+		<appender-ref ref="HIBERNATE-LOG" />
+	</logger>
+
+	<!-- Log all SQL DDL statements as they are executed -->
+	<logger name="org.hibernate.tool.hbm2ddl">
+		<level value="debug" />
+		<appender-ref ref="HIBERNATE-LOG" />
+	</logger>
+
+
+
+
+
+</configuration>
